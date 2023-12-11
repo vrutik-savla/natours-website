@@ -1,0 +1,238 @@
+/* eslint-disable */
+// 50. Setting up Express and Basic Routing
+const path = require('path');
+const express = require('express');
+const morgan = require('morgan');
+const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
+const mongoSanitize = require('express-mongo-sanitize');
+const xss = require('xss-clean');
+const hpp = require('hpp');
+const cookieParser = require('cookie-parser');
+const csp = require('express-csp');
+
+const AppError = require('./utils/appError');
+const globalErrorHandler = require('./controllers/errorController');
+const tourRouter = require('./routes/tourRoutes');
+const userRouter = require('./routes/userRoutes');
+const reviewRouter = require('./routes/reviewRoutes');
+const bookingRouter = require('./routes/bookingRoutes');
+const viewRouter = require('./routes/viewRoutes');
+
+const app = express();
+
+// 176. Setting up Pug in Express
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'views'));
+
+// 1) GLOBAL MIDDLEWARES...........................
+// Serving static files
+// app.use(express.static(`${__dirname}/public`));
+app.use(express.static(path.join(__dirname, 'public')));
+
+// 144. Setting Security HTTP Headers
+// Set Security HTTP headers
+// app.use(helmet());
+const scriptSrcUrls = [
+  `http://*`,
+  'https://unpkg.com/',
+  'https://tile.openstreetmap.org',
+  'https://*.cloudflare.com/',
+  'https://cdnjs.cloudflare.com/',
+  'https://cdnjs.cloudflare.com/ajax/libs/axios/',
+  'https://*.stripe.com',
+  'https://js.stripe.com',
+  'https://js.stripe.com/v3/',
+  'https://maps.googleapis.com',
+  'https://checkout.stripe.com',
+  'https://connect-js.stripe.com',
+  'https:',
+  'http:',
+  'data:',
+];
+const styleSrcUrls = [
+  'https://unpkg.com/',
+  'https://tile.openstreetmap.org',
+  'https://fonts.googleapis.com/',
+  'sha256-0hAheEzaMe6uXIKV4EehS9pu1am1lj/KnnzrOYqckXk=',
+  'checkout.stripe.com',
+  'https:',
+];
+const connectSrcUrls = [
+  'https://unpkg.com',
+  'https://tile.openstreetmap.org',
+  'https://checkout.stripe.com',
+  'https://*.cloudflare.com/',
+  'https://api.stripe.com',
+  'https://maps.googleapis.com',
+  'http://127.0.0.1:3000',
+  'http://localhost:3000',
+  'ws://127.0.0.1:*',
+  '*.stripe.com',
+];
+const fontSrcUrls = [
+  'fonts.googleapis.com',
+  'fonts.gstatic.com',
+  'https:',
+  'data:',
+];
+const frameSrcUrls = [
+  'https://*.stripe.com',
+  'https://js.stripe.com',
+  'https://hooks.stripe.com',
+  '*.stripe.com',
+  '*.stripe.network',
+  'https://checkout.stripe.com',
+  'https://connect-js.stripe.com',
+  'https://js.stripe.com',
+  'https:',
+  'data:',
+];
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false,
+    crossOriginEmbedderPolicy: false,
+  }),
+);
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'", 'data:', 'blob:', 'http://127.0.0.1:3000/*'],
+      baseUri: ["'self'"],
+      connectSrc: ["'self'", ...connectSrcUrls],
+      scriptSrc: ["'self'", ...scriptSrcUrls],
+      styleSrc: ["'self'", "'unsafe-inline'", ...styleSrcUrls],
+      workerSrc: ["'self'", 'data:', 'blob:'],
+      objectSrc: ["'none'"],
+      imgSrc: [
+        "'self'",
+        'blob:',
+        'data:',
+        'https:',
+        'https://*.stripe.com',
+        'https://*.stripe.com',
+      ],
+      fontSrc: ["'self'", ...fontSrcUrls],
+      childSrc: ["'self'", 'blob:'],
+      frameSrc: ["'self'", ...frameSrcUrls],
+      upgradeInsecureRequests: false,
+    },
+  }),
+);
+app.use((req, res, next) => {
+  res.setHeader(
+    'Content-Security-Policy',
+    "script-src 'self' https://unpkg.com https://cdnjs.cloudflare.com https://js.stripe.com https://js.stripe.com/v3",
+  );
+  next();
+});
+
+// 60. Using 3rd-Party Middleware
+// Development Logging
+// console.log(process.env.NODE_ENV);
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
+
+// 143. Implementing Rate Limiting
+// Limit requests from same API
+const limiter = rateLimit({
+  max: 100,
+  windowMS: 60 * 60 * 1000,
+  message: 'Too many requests from this IP, plaese try again in an hour.',
+});
+app.use('/api', limiter);
+
+// Body parser, reading data from body into req.body
+app.use(
+  express.json({
+    limit: '10kb', //Body content cannot exceet 10kb limit
+  }),
+); //middleware
+app.use(
+  //195. Updating User Data
+  express.urlencoded({
+    extended: true,
+    limit: '10kb',
+  }),
+);
+app.use(cookieParser()); //189-Parses the data from cookie
+
+// 145. Data Sanitization
+// Data Sanitization against NoSQL query injection
+app.use(mongoSanitize());
+// Data Sanitization against Cross-Site Scripting Attacks (XSS)
+app.use(xss());
+
+// 146. Preventing Parameter Pollution
+app.use(
+  hpp({
+    whitelist: [
+      'duration',
+      'ratingsAverage',
+      'ratingsQuantity',
+      'maxGroupSize',
+      'difficulty',
+      'price',
+    ],
+  }),
+);
+
+// Test middlewares
+// 59. Creating Our Own Middleware
+// app.use((req, res, next) => {
+//   // console.log('Hello from the middleware!');
+//   next();
+// });
+app.use((req, res, next) => {
+  req.requestTime = new Date().toISOString();
+  // console.log(req.headers);
+  // console.log(req.cookies);
+  next();
+});
+
+/* app.get(`/`, (request, response) => {
+  // response.status(200).send(`Hello from the server side!`); //send() sends a string to the client. We can even send json to client with json method.
+  response.status(200).json({
+    message: 'Hello from server side!',
+    app: 'Natours',
+  });
+});
+app.post(`/`, (request, response) => {
+  response.status(200).send(`You can post to this endpoint...`);
+}); */
+
+// 57. Refactoring Our Routes
+// 62. Creating and Mounting Multiple Routers
+/* 
+app.get('/api/v1/tours', getAllTours);
+app.post('/api/v1/tours', createTour);
+app.get('/api/v1/tours/:id', getTour);
+app.patch('/api/v1/tours/:id', updateTour);
+app.delete('/api/v1/tours/:id', deleteTour);
+*/
+
+// 3) ROUTRES........................................
+app.use('/', viewRouter); //Mounting a router
+app.use('/api/v1/tours', tourRouter); //Mounting a router
+app.use('/api/v1/users', userRouter); //Mounting a router
+app.use('/api/v1/reviews', reviewRouter); //Mounting a router
+app.use('/api/v1/bookings', bookingRouter); //Mounting a router
+
+// 112. Handling Unhandled Routes
+app.all('*', (req, res, next) => {
+  // res.status(404).json({
+  //   status: 'fail',
+  //   message: `Can't find ${req.originalUrl} on this server!`,
+  // });
+
+  // const err = new Error(`Can't find ${req.originalUrl} on this server!`);
+  // err.statusCode = 404;
+  // err.status = 'fail';
+
+  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+});
+
+app.use(globalErrorHandler);
+
+module.exports = app;
