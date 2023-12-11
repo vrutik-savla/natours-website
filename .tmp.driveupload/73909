@@ -1,3 +1,4 @@
 0000000000000000000000000000000000000000 3485236fa60d959ca15294184d7f587099745c68 vrutik-savla <vrutiksavla2003@gmail.com> 1702275601 +0530	commit (initial): Initial commit
 3485236fa60d959ca15294184d7f587099745c68 ca1422137d796e4a14accb3c61ceb0efdbcdcb31 vrutik-savla <vrutiksavla2003@gmail.com> 1702275878 +0530	commit: Added a comment
 ca1422137d796e4a14accb3c61ceb0efdbcdcb31 16791956ba1fde08e5e8b903c099bce5cc9dfea9 vrutik-savla <vrutiksavla2003@gmail.com> 1702276819 +0530	commit: Added a readme
+16791956ba1fde08e5e8b903c099bce5cc9dfea9 15dca7b4db86ea64f00f0be36fa9106005be4365 vrutik-savla <vrutiksavla2003@gmail.com> 1702290580 +0530	commit: Removed eslint errors

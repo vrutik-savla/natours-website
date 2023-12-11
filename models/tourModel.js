@@ -209,7 +209,7 @@ tourSchema.pre('aggregate', function (next) {
       $match: { secretTour: { $ne: true } },
     });
     // console.log(this);
-    console.log(this.pipeline());
+    // console.log(this.pipeline());
   }
 
   next();

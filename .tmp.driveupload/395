@@ -179,6 +179,7 @@ app.use(
 );
 
 // 222. Preparing Our App for Deployment
+app.use(compression());
 
 // Test middlewares
 // 59. Creating Our Own Middleware

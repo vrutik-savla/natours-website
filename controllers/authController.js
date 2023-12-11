@@ -55,7 +55,7 @@ exports.signup = catchAsyncErr(async (req, res, next) => {
 
   // 207. Email Templates with Pug: Welcome Emails
   const url = `${req.protocol}://${req.get('host')}/me`;
-  console.log(url);
+  // console.log(url);
   await new Email(newUser, url).sendWelcome();
 
   // 129. Signing up Users (Only when user signup)
