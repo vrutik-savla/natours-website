@@ -1,6 +1,6 @@
 const express = require('express');
-const bookingController = require('./../controllers/bookingController');
-const authController = require('./../controllers/authController');
+const bookingController = require('../controllers/bookingController');
+const authController = require('../controllers/authController');
 
 // 211. Integrating Stripe into the Back-End
 const router = express.Router();

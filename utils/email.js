@@ -1,6 +1,6 @@
 /* eslint-disable import/no-extraneous-dependencies */
 const nodemailer = require('nodemailer');
-const sendinBlueTransport = require('nodemailer-sendinblue-transport');
+// const sendinBlueTransport = require('nodemailer-sendinblue-transport');
 const pug = require('pug');
 const { convert } = require('html-to-text');
 

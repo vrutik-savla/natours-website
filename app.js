@@ -1,4 +1,3 @@
-/* eslint-disable */
 // 50. Setting up Express and Basic Routing
 const path = require('path');
 const express = require('express');
@@ -9,7 +8,7 @@ const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
 const cookieParser = require('cookie-parser');
-const csp = require('express-csp');
+const compression = require('compression');
 
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
@@ -178,6 +177,8 @@ app.use(
     ],
   }),
 );
+
+// 222. Preparing Our App for Deployment
 
 // Test middlewares
 // 59. Creating Our Own Middleware

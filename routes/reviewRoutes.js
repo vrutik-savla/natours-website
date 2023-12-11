@@ -1,6 +1,6 @@
 const express = require('express');
-const reviewController = require('./../controllers/reviewController');
-const authController = require('./../controllers/authController');
+const reviewController = require('../controllers/reviewController');
+const authController = require('../controllers/authController');
 
 const router = express.Router({ mergeParams: true });
 // POST /tour/24589hew322/reviews
